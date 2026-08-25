@@ -14,18 +14,17 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { syncOfflineData } from "@/lib/offline-db";
 import { AccessibilityProvider } from "@/components/accessibility/AccessibilityProvider";
+import EncryptionUnlockDialog from "@/components/auth/EncryptionUnlockDialog";
 import ProtectedRoute from "./components/auth/ProtectedRoute.tsx";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import Layout from "./components/layout/Layout.tsx";
 import ScrollToTop from "@/components/navigation/ScrollToTop.tsx";
 
-// Preload Dashboard page for faster navigation
-const preloadDashboard = () => import("./pages/Dashboard");
-
 // Lazy-loaded pages
+const DigestiveTracker = lazy(() => import("@/pages/DigestiveTracker"));
 const Index = lazy(() => import("./pages/Home/Index.tsx"));
 const Auth = lazy(() => import("./pages/Auth/index.tsx"));
-const Dashboard = lazy(() => preloadDashboard());
+const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Metrics = lazy(() => import("./pages/Metrics"));
 const History = lazy(() => import("./pages/History"));
@@ -47,11 +46,6 @@ const BlogPostPage = lazy(() => import("@/pages/Blog/BlogPostPage.tsx"));
 const ResetPassword = lazy(() => import("./pages/User/ResetPassword.tsx"));
 const GamificationPage = lazy(() => import("@/pages/Gamification"));
 const Reminders = lazy(() => import("./pages/Reminders/index.tsx"));
-
-// Preload dashboard on app start for faster perceived navigation
-if (typeof window !== "undefined") {
-  preloadDashboard();
-}
 
 // Loading spinner fallback component
 const LoadingScreen = () => (
@@ -136,6 +130,9 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          {/* Shown whenever a session exists but the encryption seed is missing
+              (issue #1056) — the user must re-enter their password to unlock. */}
+          <EncryptionUnlockDialog />
           <BrowserRouter>
             <AuthProvider>
               <ScrollToTop />
